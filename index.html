@@ -1,3 +1,134 @@
-<html>
-  <title>Formulário Associação Pantanal 2</title>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Relatório - Associação Pantanal (Editável)</title>
+
+  <!-- Fontes -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css" />
+  <!-- html2pdf (jsPDF + html2canvas) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <!-- Toolbar fixa -->
+  <div class="toolbar no-print" role="navigation" aria-label="Barra de ferramentas">
+    <div class="toolbar-inner">
+      <div class="left">
+        <button id="generatePdf">Gerar PDF</button>
+        <button id="previewPrint">Visualizar impressão</button>
+      </div>
+
+      <div class="brand" aria-hidden="true">
+        <!-- espaço central opcional (pode conter título curto) -->
+      </div>
+
+      <div class="right">
+        <button id="addSection">Adicionar seção</button>
+        <button id="addHeading">Adicionar título (h2)</button>
+        <button id="addParagraph">Adicionar parágrafo</button>
+        <button id="addImage">Inserir imagem</button>
+        <button id="deleteSection">Remover seção ativa</button>
+      </div>
+
+      <!-- botão hamburguer (visível apenas em telas pequenas) -->
+      <button id="mobileToggle" class="mobile-toggle" aria-expanded="false" aria-controls="mobileMenu" aria-label="Abrir menu">
+        <span class="hamburger">
+          <span></span><span></span><span></span>
+        </span>
+      </button>
+    </div>
+
+    <!-- menu dropdown para mobile (mesmos controles) -->
+    <div id="mobileMenu" class="mobile-menu" role="menu" aria-hidden="true">
+      <div class="mobile-section">
+        <button id="mobile-generatePdf">Gerar PDF</button>
+        <button id="mobile-previewPrint">Visualizar impressão</button>
+      </div>
+      <div class="mobile-section">
+        <button id="mobile-addSection">Adicionar seção</button>
+        <button id="mobile-addHeading">Adicionar título (h2)</button>
+        <button id="mobile-addParagraph">Adicionar parágrafo</button>
+        <button id="mobile-addImage">Inserir imagem</button>
+        <button id="mobile-deleteSection">Remover seção ativa</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- hidden file input para images -->
+  <input id="imageInput" type="file" accept="image/*" style="display:none" />
+
+  <!-- Conteúdo que será convertido em PDF -->
+  <div id="pdf-content">
+    <!-- Capa (página 1) -->
+    <section class="page cover" id="capa">
+      <div class="cover-inner">
+        <img class="logo" src="https://via.placeholder.com/220x80?text=Logo" alt="Logo Associação Pantanal" />
+
+        <img class="cover-image" src="https://picsum.photos/1200/1600?grayscale&blur=1" alt="Capa ilustrativa (substitua)" />
+
+        <svg class="cover-shape" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <polygon points="0,0 100,0 100,70" />
+        </svg>
+
+        <div class="cover-content">
+          <!-- editáveis -->
+          <h1 class="title" contenteditable="true">Associação Pantanal</h1>
+          <h2 class="subtitle" contenteditable="true">Relatório anual e atualizações</h2>
+          <p class="meta" contenteditable="true">Data: <span id="reportDate"></span></p>
+        </div>
+
+        <div class="cover-footer" contenteditable="true">
+          Rua Exemplo, 123 — Cidade • contato@associacaopantanal.org
+        </div>
+      </div>
+    </section>
+
+    <!-- Contra-capa / Sumário (página 2) -->
+    <section class="page toc" id="sumario">
+      <h1 contenteditable="true">Sumário</h1>
+      <ol id="tocList"></ol>
+    </section>
+
+    <!-- Conteúdo (páginas seguintes) -->
+    <main class="page content" id="conteudo">
+      <!-- cada article é uma seção editável -->
+      <article class="section" tabindex="0">
+        <div class="section-controls no-print">
+          <span class="hint">Seção ativa</span>
+        </div>
+        <h2 id="introducao" contenteditable="true">1. Introdução</h2>
+        <p contenteditable="true">Texto da introdução... (clique e edite este texto)</p>
+      </article>
+
+      <article class="section" tabindex="0">
+        <div class="section-controls no-print">
+          <span class="hint">Seção ativa</span>
+        </div>
+        <h2 id="atividades" contenteditable="true">2. Atividades Recentes</h2>
+        <p contenteditable="true">Descrição das atividades...</p>
+      </article>
+
+      <article class="section" tabindex="0">
+        <div class="section-controls no-print">
+          <span class="hint">Seção ativa</span>
+        </div>
+        <h2 id="financeiro" contenteditable="true">3. Financeiro</h2>
+        <p contenteditable="true">Resumo financeiro...</p>
+      </article>
+    </main>
+
+    <!-- Contracapa final (página última) -->
+    <section class="page backcover" id="contracapa">
+      <div class="back-inner" contenteditable="true">
+        <h3>Obrigado</h3>
+        <p>Associação Pantanal — Todos os direitos reservados</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
 </html>
