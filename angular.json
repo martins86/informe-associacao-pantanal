@@ -62,16 +62,25 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "project:build:production"
+              "buildTarget": "informe-associacao-pantanal:build:production"
             },
             "development": {
-              "buildTarget": "project:build:development"
+              "buildTarget": "informe-associacao-pantanal:build:development"
             }
           },
           "defaultConfiguration": "development"
         },
         "test": {
           "builder": "@angular/build:unit-test"
+        },
+        "deploy": {
+          "builder": "angular-cli-ghpages:deploy",
+          "options": {
+            "repo": "https://github.com/martins86/informe-associacao-pantanal.git",
+            "baseHref": "/informe-associacao-pantanal/",
+            "name": "martins86",
+            "email": "martins86@gmail.com"
+          }
         }
       }
     }

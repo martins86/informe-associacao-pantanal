@@ -109,7 +109,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm install
-          npm run deploy:gh -- --name="martins86" --email="martins86@gmail.com" --no-silent --repo=https://github.com/martins86/informe-associacao-pantanal.git
+          npm run deploy:gh -- --no-silent
 
   audit:
     if: github.event_name == 'pull_request' || github.event_name == 'push'
