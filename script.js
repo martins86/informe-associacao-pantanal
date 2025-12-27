@@ -1,9 +1,9 @@
-// script.js — edições, geração de PDF, menu hamburguer (sempre) e logo upload/remove/restore
+// script.js — edições, geração de PDF, menu hamburguer responsivo e logo upload/remove/restore
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
 
   setupToolbar();
-  setupMenuBehavior();
+  setupMobileMenuBehavior();
   bindSectionClicks();
   bindLogoControls();
   loadLogoFromStorage();
@@ -13,29 +13,48 @@ document.addEventListener('DOMContentLoaded', () => {
 let activeSection = null;
 
 function setupToolbar(){
-  // Only Generate PDF button is in the visible toolbar
+  // Desktop buttons
+  document.getElementById('addSection').addEventListener('click', addSection);
+  document.getElementById('addHeading').addEventListener('click', () => addHeadingToActive());
+  document.getElementById('addParagraph').addEventListener('click', () => addParagraphToActive());
+  document.getElementById('addImage').addEventListener('click', () => document.getElementById('imageInput').click());
+  document.getElementById('deleteSection').addEventListener('click', deleteActiveSection);
+
   document.getElementById('generatePdf').addEventListener('click', generatePDF);
+  document.getElementById('previewPrint').addEventListener('click', () => {
+    buildTOC();
+    window.print();
+  });
 
-  // Menu actions (all controls live inside the menu now)
-  document.getElementById('previewPrint').addEventListener('click', () => { buildTOC(); window.print(); closeMenu(); });
-  document.getElementById('addSection').addEventListener('click', () => { addSection(); closeMenu(); });
-  document.getElementById('addHeading').addEventListener('click', () => { addHeadingToActive(); closeMenu(); });
-  document.getElementById('addParagraph').addEventListener('click', () => { addParagraphToActive(); closeMenu(); });
-  document.getElementById('addImage').addEventListener('click', () => { document.getElementById('imageInput').click(); closeMenu(); });
-  document.getElementById('deleteSection').addEventListener('click', () => { deleteActiveSection(); closeMenu(); });
+  // Logo controls (desktop)
+  document.getElementById('changeLogo').addEventListener('click', () => document.getElementById('logoInput').click());
+  document.getElementById('removeLogo').addEventListener('click', removeLogo);
+  document.getElementById('restoreLogo').addEventListener('click', restoreDefaultLogo);
 
-  // Logo controls
-  document.getElementById('changeLogo').addEventListener('click', () => { document.getElementById('logoInput').click(); closeMenu(); });
-  document.getElementById('removeLogo').addEventListener('click', () => { removeLogo(); closeMenu(); });
-  document.getElementById('restoreLogo').addEventListener('click', () => { restoreDefaultLogo(); closeMenu(); });
+  // Mobile menu buttons (duplicados no DOM para mobile)
+  document.getElementById('mobile-addSection').addEventListener('click', () => { addSection(); closeMobileMenu(); });
+  document.getElementById('mobile-addHeading').addEventListener('click', () => { addHeadingToActive(); closeMobileMenu(); });
+  document.getElementById('mobile-addParagraph').addEventListener('click', () => { addParagraphToActive(); closeMobileMenu(); });
+  document.getElementById('mobile-addImage').addEventListener('click', () => { document.getElementById('imageInput').click(); closeMobileMenu(); });
+  document.getElementById('mobile-deleteSection').addEventListener('click', () => { deleteActiveSection(); closeMobileMenu(); });
+
+  document.getElementById('mobile-generatePdf').addEventListener('click', () => { generatePDF(); closeMobileMenu(); });
+  document.getElementById('mobile-previewPrint').addEventListener('click', () => { buildTOC(); window.print(); closeMobileMenu(); });
+
+  // Mobile logo controls
+  document.getElementById('mobile-changeLogo').addEventListener('click', () => { document.getElementById('logoInput').click(); closeMobileMenu(); });
+  document.getElementById('mobile-removeLogo').addEventListener('click', () => { removeLogo(); closeMobileMenu(); });
+  document.getElementById('mobile-restoreLogo').addEventListener('click', () => { restoreDefaultLogo(); closeMobileMenu(); });
 
   document.getElementById('imageInput').addEventListener('change', handleImageUpload);
   document.getElementById('logoInput').addEventListener('change', handleLogoUpload);
 }
 
-function setupMenuBehavior(){
+// Mobile menu toggle + close on outside click + close on resize
+function setupMobileMenuBehavior(){
   const toggle = document.getElementById('mobileToggle');
   const menu = document.getElementById('mobileMenu');
+  const breakpoint = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--mobile-breakpoint')) || 700;
 
   toggle.addEventListener('click', (ev) => {
     ev.stopPropagation();
@@ -44,15 +63,25 @@ function setupMenuBehavior(){
     toggle.setAttribute('aria-expanded', String(open));
   });
 
+  // fechar ao clicar fora
   document.addEventListener('click', (ev) => {
     if (!menu.classList.contains('open')) return;
-    if (ev.target.closest('.toolbar') === null) closeMenu();
+    if (ev.target.closest('.toolbar') === null) closeMobileMenu();
   });
 
-  window.addEventListener('resize', () => { if (document.getElementById('mobileMenu').classList.contains('open')) closeMenu(); });
+  // fechar ao redimensionar para desktop
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      if (window.innerWidth > breakpoint && menu.classList.contains('open')) {
+        closeMobileMenu();
+      }
+    }, 150);
+  });
 }
 
-function closeMenu(){
+function closeMobileMenu(){
   const toggle = document.getElementById('mobileToggle');
   const menu = document.getElementById('mobileMenu');
   menu.classList.remove('open');
@@ -76,7 +105,12 @@ function bindSectionClicks(){
   if (first) setActiveSection(first);
 }
 
-function setActiveSection(sec){ if (!sec) return; document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); sec.classList.add('active'); activeSection = sec; }
+function setActiveSection(sec){
+  if (!sec) return;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  sec.classList.add('active');
+  activeSection = sec;
+}
 
 function addSection(){
   const conteudo = document.getElementById('conteudo');
@@ -108,28 +142,201 @@ function addSection(){
   buildTOC();
 }
 
-function addHeadingToActive(){ if (!activeSection) { addSection(); return; } const h2 = document.createElement('h2'); h2.contentEditable = 'true'; h2.textContent = 'Título adicionado'; activeSection.appendChild(h2); h2.focus(); buildTOC(); }
-function addParagraphToActive(){ if (!activeSection) { addSection(); return; } const p = document.createElement('p'); p.contentEditable = 'true'; p.textContent = 'Parágrafo adicionado — clique para editar...'; activeSection.appendChild(p); p.focus(); buildTOC(); }
-function deleteActiveSection(){ if (!activeSection) return alert('Nenhuma seção ativa selecionada.'); if (!confirm('Remover esta seção? Esta ação não pode ser desfeita.')) return; const next = activeSection.nextElementSibling || activeSection.previousElementSibling; activeSection.remove(); activeSection = null; if (next && next.classList.contains('section')) setActiveSection(next); buildTOC(); }
+function addHeadingToActive(){
+  if (!activeSection) { addSection(); return; }
+  const h2 = document.createElement('h2');
+  h2.contentEditable = 'true';
+  h2.textContent = 'Título adicionado';
+  activeSection.appendChild(h2);
+  h2.focus();
+  buildTOC();
+}
 
-function handleImageUpload(ev){ const files = ev.target.files; if (!files || files.length === 0) return; const file = files[0]; const reader = new FileReader(); reader.onload = function(e){ const dataUrl = e.target.result; insertImageToActive(dataUrl, file.name); }; reader.readAsDataURL(file); ev.target.value = ''; }
-function insertImageToActive(src, alt){ if (!activeSection) addSection(); const img = document.createElement('img'); img.src = src; img.alt = alt || 'Imagem'; img.style.maxWidth = '100%'; img.style.height = 'auto'; img.title = 'Clique para selecionar; Ctrl+Click para remover'; img.addEventListener('click', (ev) => { if (ev.ctrlKey || ev.metaKey) { if (confirm('Remover esta imagem?')) img.remove(); } else { img.style.outline = '3px solid rgba(11,107,79,0.25)'; setTimeout(()=> img.style.outline = '', 1000); } buildTOC(); }); activeSection.appendChild(img); buildTOC(); }
+function addParagraphToActive(){
+  if (!activeSection) { addSection(); return; }
+  const p = document.createElement('p');
+  p.contentEditable = 'true';
+  p.textContent = 'Parágrafo adicionado — clique para editar...';
+  activeSection.appendChild(p);
+  p.focus();
+  buildTOC();
+}
 
-function buildTOC(){ const tocList = document.getElementById('tocList'); tocList.innerHTML = ''; const headings = document.querySelectorAll('#conteudo h2'); headings.forEach((h, idx) => { if (!h.id) h.id = 'heading-' + idx + '-' + Date.now(); const li = document.createElement('li'); const a = document.createElement('a'); a.href = '#' + h.id; a.textContent = h.textContent; a.addEventListener('click', (ev) => { ev.preventDefault(); document.getElementById(h.id).scrollIntoView({behavior:'smooth'}); setActiveSection(h.closest('.section')); }); li.appendChild(a); tocList.appendChild(li); }); if (headings.length === 0) { const li = document.createElement('li'); li.textContent = 'Nenhuma seção encontrada.'; tocList.appendChild(li); } }
+function deleteActiveSection(){
+  if (!activeSection) return alert('Nenhuma seção ativa selecionada.');
+  if (!confirm('Remover esta seção? Esta ação não pode ser desfeita.')) return;
+  const next = activeSection.nextElementSibling || activeSection.previousElementSibling;
+  activeSection.remove();
+  activeSection = null;
+  if (next && next.classList.contains('section')) setActiveSection(next);
+  buildTOC();
+}
+
+function handleImageUpload(ev){
+  const files = ev.target.files;
+  if (!files || files.length === 0) return;
+  const file = files[0];
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const dataUrl = e.target.result;
+    insertImageToActive(dataUrl, file.name);
+  };
+  reader.readAsDataURL(file);
+  ev.target.value = '';
+}
+
+function insertImageToActive(src, alt){
+  if (!activeSection) addSection();
+  const img = document.createElement('img');
+  img.src = src;
+  img.alt = alt || 'Imagem';
+  img.style.maxWidth = '100%';
+  img.style.height = 'auto';
+  img.title = 'Clique para selecionar; Ctrl+Click para remover';
+  img.addEventListener('click', (ev) => {
+    if (ev.ctrlKey || ev.metaKey) {
+      if (confirm('Remover esta imagem?')) img.remove();
+    } else {
+      img.style.outline = '3px solid rgba(11,107,79,0.25)';
+      setTimeout(()=> img.style.outline = '', 1000);
+    }
+    buildTOC();
+  });
+  activeSection.appendChild(img);
+  buildTOC();
+}
+
+function buildTOC(){
+  const tocList = document.getElementById('tocList');
+  tocList.innerHTML = '';
+  const headings = document.querySelectorAll('#conteudo h2');
+  headings.forEach((h, idx) => {
+    if (!h.id) h.id = 'heading-' + idx + '-' + Date.now();
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent;
+    a.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      document.getElementById(h.id).scrollIntoView({behavior:'smooth'});
+      setActiveSection(h.closest('.section'));
+    });
+    li.appendChild(a);
+    tocList.appendChild(li);
+  });
+  if (headings.length === 0) {
+    const li = document.createElement('li');
+    li.textContent = 'Nenhuma seção encontrada.';
+    tocList.appendChild(li);
+  }
+}
 
 /* -------------------------
    Logo upload / remove / restore
    ------------------------- */
 
-function bindLogoControls(){ }
-function handleLogoUpload(ev){ const files = ev.target.files; if (!files || files.length === 0) return; const file = files[0]; const reader = new FileReader(); reader.onload = function(e){ const dataUrl = e.target.result; setLogo(dataUrl); try { localStorage.setItem('pantanal_logo', dataUrl); } catch(e) { console.warn('Could not save logo to localStorage', e); } }; reader.readAsDataURL(file); ev.target.value = ''; }
-function setLogo(dataUrl){ const logo = document.getElementById('siteLogo'); if (!logo) return; logo.src = dataUrl; logo.style.display = ''; logo.setAttribute('data-custom', 'true'); }
-function removeLogo(){ const logo = document.getElementById('siteLogo'); if (!logo) return; logo.style.display = 'none'; logo.removeAttribute('data-custom'); try { localStorage.setItem('pantanal_logo', 'NONE'); } catch(e) { console.warn('Could not save logo state', e); } }
-function restoreDefaultLogo(){ const logo = document.getElementById('siteLogo'); if (!logo) return; const defaultSrc = 'https://via.placeholder.com/220x80?text=Logo'; logo.src = defaultSrc; logo.style.display = ''; logo.removeAttribute('data-custom'); try { localStorage.setItem('pantanal_logo', defaultSrc); } catch(e) { console.warn('Could not save logo state', e); } }
-function loadLogoFromStorage(){ const logo = document.getElementById('siteLogo'); if (!logo) return; try { const stored = localStorage.getItem('pantanal_logo'); if (!stored) return; if (stored === 'NONE') { logo.style.display = 'none'; } else { logo.src = stored; logo.style.display = ''; } } catch(e) { console.warn('Could not read logo from localStorage', e); } }
+function bindLogoControls(){
+  // logo input already bound in setupToolbar
+  // nothing additional required here, function kept for clarity
+}
+
+function handleLogoUpload(ev){
+  const files = ev.target.files;
+  if (!files || files.length === 0) return;
+  const file = files[0];
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const dataUrl = e.target.result;
+    setLogo(dataUrl);
+    // persist
+    try { localStorage.setItem('pantanal_logo', dataUrl); } catch(e) { console.warn('Could not save logo to localStorage', e); }
+  };
+  reader.readAsDataURL(file);
+  ev.target.value = '';
+}
+
+function setLogo(dataUrl){
+  const logo = document.getElementById('siteLogo');
+  if (!logo) return;
+  logo.src = dataUrl;
+  logo.style.display = ''; // ensure visible
+  logo.setAttribute('data-custom', 'true');
+}
+
+function removeLogo(){
+  const logo = document.getElementById('siteLogo');
+  if (!logo) return;
+  // hide logo element (user wants no image)
+  logo.style.display = 'none';
+  logo.removeAttribute('data-custom');
+  try { localStorage.setItem('pantanal_logo', 'NONE'); } catch(e) { console.warn('Could not save logo state', e); }
+}
+
+function restoreDefaultLogo(){
+  const logo = document.getElementById('siteLogo');
+  if (!logo) return;
+  // set to default placeholder (or provide your default asset path)
+  const defaultSrc = 'https://via.placeholder.com/220x80?text=Logo';
+  logo.src = defaultSrc;
+  logo.style.display = '';
+  logo.removeAttribute('data-custom');
+  try { localStorage.setItem('pantanal_logo', defaultSrc); } catch(e) { console.warn('Could not save logo state', e); }
+}
+
+function loadLogoFromStorage(){
+  const logo = document.getElementById('siteLogo');
+  if (!logo) return;
+  try {
+    const stored = localStorage.getItem('pantanal_logo');
+    if (!stored) return; // use existing src
+    if (stored === 'NONE') {
+      logo.style.display = 'none';
+    } else {
+      logo.src = stored;
+      logo.style.display = '';
+    }
+  } catch(e) {
+    console.warn('Could not read logo from localStorage', e);
+  }
+}
 
 /* -------------------------
    PDF generation
    ------------------------- */
 
-function generatePDF(){ buildTOC(); closeMenu(); const element = document.getElementById('pdf-content'); const noPrintNodes = Array.from(document.querySelectorAll('.no-print')); const previousDisplays = noPrintNodes.map(n => n.style.display); noPrintNodes.forEach(n => n.style.display = 'none'); const opt = { margin: [10, 10, 10, 10], filename: 'relatorio-associacao-pantanal.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2.5, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; html2pdf().set(opt).from(element).save().then(() => { noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || ''); }).catch((err) => { noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || ''); console.error('Erro ao gerar PDF', err); alert('Ocorreu um erro ao gerar o PDF. Veja o console para detalhes.'); }); setTimeout(() => { noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || ''); }, 10000); }
+function generatePDF(){
+  buildTOC();
+
+  // fechar mobile menu se estiver aberto
+  closeMobileMenu();
+
+  const element = document.getElementById('pdf-content');
+
+  const noPrintNodes = Array.from(document.querySelectorAll('.no-print'));
+  const previousDisplays = noPrintNodes.map(n => n.style.display);
+  noPrintNodes.forEach(n => n.style.display = 'none');
+
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: 'relatorio-associacao-pantanal.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2.5,
+      useCORS: true,
+      logging: false
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || '');
+  }).catch((err) => {
+    noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || '');
+    console.error('Erro ao gerar PDF', err);
+    alert('Ocorreu um erro ao gerar o PDF. Veja o console para detalhes.');
+  });
+
+  setTimeout(() => {
+    noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || '');
+  }, 10000);
+}
