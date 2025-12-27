@@ -1,4 +1,4 @@
-// script.js — compressão do logo (resize + quality) e drag & drop das seções (SortableJS)
+// script.js — edições, geração de PDF, menu hamburguer (sempre) e logo upload/remove/restore
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
 
@@ -7,18 +7,16 @@ document.addEventListener('DOMContentLoaded', () => {
   bindSectionClicks();
   bindLogoControls();
   loadLogoFromStorage();
-  initSortableSections();
   buildTOC();
 });
 
 let activeSection = null;
 
-/* -------------------------
-   Toolbar & menu bindings
-   ------------------------- */
 function setupToolbar(){
+  // Only Generate PDF button is in the visible toolbar
   document.getElementById('generatePdf').addEventListener('click', generatePDF);
 
+  // Menu actions (all controls live inside the menu now)
   document.getElementById('previewPrint').addEventListener('click', () => { buildTOC(); window.print(); closeMenu(); });
   document.getElementById('addSection').addEventListener('click', () => { addSection(); closeMenu(); });
   document.getElementById('addHeading').addEventListener('click', () => { addHeadingToActive(); closeMenu(); });
@@ -51,7 +49,7 @@ function setupMenuBehavior(){
     if (ev.target.closest('.toolbar') === null) closeMenu();
   });
 
-  window.addEventListener('resize', () => { if (menu.classList.contains('open')) closeMenu(); });
+  window.addEventListener('resize', () => { if (document.getElementById('mobileMenu').classList.contains('open')) closeMenu(); });
 }
 
 function closeMenu(){
@@ -62,9 +60,6 @@ function closeMenu(){
   toggle.setAttribute('aria-expanded', 'false');
 }
 
-/* -------------------------
-   Sections logic (add/delete/reorder)
-   ------------------------- */
 function bindSectionClicks(){
   const container = document.getElementById('conteudo');
   container.addEventListener('click', (ev) => {
@@ -81,12 +76,7 @@ function bindSectionClicks(){
   if (first) setActiveSection(first);
 }
 
-function setActiveSection(sec){
-  if (!sec) return;
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  sec.classList.add('active');
-  activeSection = sec;
-}
+function setActiveSection(sec){ if (!sec) return; document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); sec.classList.add('active'); activeSection = sec; }
 
 function addSection(){
   const conteudo = document.getElementById('conteudo');
@@ -97,7 +87,7 @@ function addSection(){
 
   const controls = document.createElement('div');
   controls.className = 'section-controls no-print';
-  controls.innerHTML = '<span class="drag-handle" title="Arraste para reordenar">≡</span><span class="hint">Seção</span>';
+  controls.innerHTML = '<span class="hint">Seção</span>';
   article.appendChild(controls);
 
   const h2 = document.createElement('h2');
@@ -116,268 +106,30 @@ function addSection(){
   setActiveSection(article);
   h2.focus();
   buildTOC();
-
-  // reinit sortable to include new node (Sortable handles dynamically, but ensure update)
-  if (window.sortableSections && typeof window.sortableSections.option === 'function') {
-    window.sortableSections.option('disabled', false);
-  }
 }
 
-function addHeadingToActive(){
-  if (!activeSection) { addSection(); return; }
-  const h2 = document.createElement('h2');
-  h2.contentEditable = 'true';
-  h2.textContent = 'Título adicionado';
-  activeSection.appendChild(h2);
-  h2.focus();
-  buildTOC();
-}
+function addHeadingToActive(){ if (!activeSection) { addSection(); return; } const h2 = document.createElement('h2'); h2.contentEditable = 'true'; h2.textContent = 'Título adicionado'; activeSection.appendChild(h2); h2.focus(); buildTOC(); }
+function addParagraphToActive(){ if (!activeSection) { addSection(); return; } const p = document.createElement('p'); p.contentEditable = 'true'; p.textContent = 'Parágrafo adicionado — clique para editar...'; activeSection.appendChild(p); p.focus(); buildTOC(); }
+function deleteActiveSection(){ if (!activeSection) return alert('Nenhuma seção ativa selecionada.'); if (!confirm('Remover esta seção? Esta ação não pode ser desfeita.')) return; const next = activeSection.nextElementSibling || activeSection.previousElementSibling; activeSection.remove(); activeSection = null; if (next && next.classList.contains('section')) setActiveSection(next); buildTOC(); }
 
-function addParagraphToActive(){
-  if (!activeSection) { addSection(); return; }
-  const p = document.createElement('p');
-  p.contentEditable = 'true';
-  p.textContent = 'Parágrafo adicionado — clique para editar...';
-  activeSection.appendChild(p);
-  p.focus();
-  buildTOC();
-}
+function handleImageUpload(ev){ const files = ev.target.files; if (!files || files.length === 0) return; const file = files[0]; const reader = new FileReader(); reader.onload = function(e){ const dataUrl = e.target.result; insertImageToActive(dataUrl, file.name); }; reader.readAsDataURL(file); ev.target.value = ''; }
+function insertImageToActive(src, alt){ if (!activeSection) addSection(); const img = document.createElement('img'); img.src = src; img.alt = alt || 'Imagem'; img.style.maxWidth = '100%'; img.style.height = 'auto'; img.title = 'Clique para selecionar; Ctrl+Click para remover'; img.addEventListener('click', (ev) => { if (ev.ctrlKey || ev.metaKey) { if (confirm('Remover esta imagem?')) img.remove(); } else { img.style.outline = '3px solid rgba(11,107,79,0.25)'; setTimeout(()=> img.style.outline = '', 1000); } buildTOC(); }); activeSection.appendChild(img); buildTOC(); }
 
-function deleteActiveSection(){
-  if (!activeSection) return alert('Nenhuma seção ativa selecionada.');
-  if (!confirm('Remover esta seção? Esta ação não pode ser desfeita.')) return;
-  const next = activeSection.nextElementSibling || activeSection.previousElementSibling;
-  activeSection.remove();
-  activeSection = null;
-  if (next && next.classList.contains('section')) setActiveSection(next);
-  buildTOC();
-}
+function buildTOC(){ const tocList = document.getElementById('tocList'); tocList.innerHTML = ''; const headings = document.querySelectorAll('#conteudo h2'); headings.forEach((h, idx) => { if (!h.id) h.id = 'heading-' + idx + '-' + Date.now(); const li = document.createElement('li'); const a = document.createElement('a'); a.href = '#' + h.id; a.textContent = h.textContent; a.addEventListener('click', (ev) => { ev.preventDefault(); document.getElementById(h.id).scrollIntoView({behavior:'smooth'}); setActiveSection(h.closest('.section')); }); li.appendChild(a); tocList.appendChild(li); }); if (headings.length === 0) { const li = document.createElement('li'); li.textContent = 'Nenhuma seção encontrada.'; tocList.appendChild(li); } }
 
 /* -------------------------
-   Image insertion (content)
-   ------------------------- */
-function handleImageUpload(ev){
-  const files = ev.target.files;
-  if (!files || files.length === 0) return;
-  const file = files[0];
-  const reader = new FileReader();
-  reader.onload = function(e){
-    const dataUrl = e.target.result;
-    insertImageToActive(dataUrl, file.name);
-  };
-  reader.readAsDataURL(file);
-  ev.target.value = '';
-}
-
-function insertImageToActive(src, alt){
-  if (!activeSection) addSection();
-  const img = document.createElement('img');
-  img.src = src;
-  img.alt = alt || 'Imagem';
-  img.style.maxWidth = '100%';
-  img.style.height = 'auto';
-  img.title = 'Clique para selecionar; Ctrl+Click para remover';
-  img.addEventListener('click', (ev) => {
-    if (ev.ctrlKey || ev.metaKey) {
-      if (confirm('Remover esta imagem?')) img.remove();
-    } else {
-      img.style.outline = '3px solid rgba(11,107,79,0.25)';
-      setTimeout(()=> img.style.outline = '', 1000);
-    }
-    buildTOC();
-  });
-  activeSection.appendChild(img);
-  buildTOC();
-}
-
-function buildTOC(){
-  const tocList = document.getElementById('tocList');
-  tocList.innerHTML = '';
-  const headings = document.querySelectorAll('#conteudo h2');
-  headings.forEach((h, idx) => {
-    if (!h.id) h.id = 'heading-' + idx + '-' + Date.now();
-    const li = document.createElement('li');
-    const a = document.createElement('a');
-    a.href = '#' + h.id;
-    a.textContent = h.textContent;
-    a.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      document.getElementById(h.id).scrollIntoView({behavior:'smooth'});
-      setActiveSection(h.closest('.section'));
-    });
-    li.appendChild(a);
-    tocList.appendChild(li);
-  });
-  if (headings.length === 0) {
-    const li = document.createElement('li');
-    li.textContent = 'Nenhuma seção encontrada.';
-    tocList.appendChild(li);
-  }
-}
-
-/* -------------------------
-   Logo upload / compress / remove / restore
+   Logo upload / remove / restore
    ------------------------- */
 
-function bindLogoControls(){
-  // nothing extra needed here, handlers bound in setupToolbar
-}
-
-// Resize + compress logo before saving
-function handleLogoUpload(ev){
-  const files = ev.target.files;
-  if (!files || files.length === 0) return;
-  const file = files[0];
-
-  // Read file as data URL (for fallback) and as Image for resizing
-  const urlReader = new FileReader();
-  urlReader.onload = () => {
-    const originalDataUrl = urlReader.result;
-    // Try to resize using an offscreen Image + canvas
-    const img = new Image();
-    // Ensure CORS-safe for local files/data URLs
-    img.onload = () => {
-      const MAX_WIDTH = 600; // ajuste conforme desejado
-      const MAX_HEIGHT = 200;
-      let targetWidth = img.width;
-      let targetHeight = img.height;
-
-      // Calculate new size preserving aspect ratio
-      const ratio = Math.min(1, MAX_WIDTH / img.width, MAX_HEIGHT / img.height);
-      targetWidth = Math.round(img.width * ratio);
-      targetHeight = Math.round(img.height * ratio);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
-      const ctx = canvas.getContext('2d');
-
-      // For PNGs keep transparency; for others use white background optionally
-      const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-      if (outputType === 'image/jpeg') {
-        // white background for jpeg
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-      // Quality for jpeg
-      const quality = 0.85;
-      const resizedDataUrl = canvas.toDataURL(outputType, outputType === 'image/jpeg' ? quality : undefined);
-
-      // Save and set logo
-      setLogo(resizedDataUrl);
-      try { localStorage.setItem('pantanal_logo', resizedDataUrl); } catch(e) { console.warn('Could not save logo to localStorage', e); }
-    };
-
-    img.onerror = () => {
-      // fallback: use original dataURL
-      setLogo(originalDataUrl);
-      try { localStorage.setItem('pantanal_logo', originalDataUrl); } catch(e) { console.warn('Could not save logo to localStorage', e); }
-    };
-
-    img.src = originalDataUrl;
-  };
-  urlReader.readAsDataURL(file);
-  ev.target.value = '';
-}
-
-function setLogo(dataUrl){
-  const logo = document.getElementById('siteLogo');
-  if (!logo) return;
-  logo.src = dataUrl;
-  logo.style.display = '';
-  logo.setAttribute('data-custom', 'true');
-}
-
-function removeLogo(){
-  const logo = document.getElementById('siteLogo');
-  if (!logo) return;
-  logo.style.display = 'none';
-  logo.removeAttribute('data-custom');
-  try { localStorage.setItem('pantanal_logo', 'NONE'); } catch(e) { console.warn('Could not save logo state', e); }
-}
-
-function restoreDefaultLogo(){
-  const logo = document.getElementById('siteLogo');
-  if (!logo) return;
-  const defaultSrc = 'https://via.placeholder.com/220x80?text=Logo';
-  logo.src = defaultSrc;
-  logo.style.display = '';
-  logo.removeAttribute('data-custom');
-  try { localStorage.setItem('pantanal_logo', defaultSrc); } catch(e) { console.warn('Could not save logo state', e); }
-}
-
-function loadLogoFromStorage(){
-  const logo = document.getElementById('siteLogo');
-  if (!logo) return;
-  try {
-    const stored = localStorage.getItem('pantanal_logo');
-    if (!stored) return; // use existing src
-    if (stored === 'NONE') {
-      logo.style.display = 'none';
-    } else {
-      logo.src = stored;
-      logo.style.display = '';
-    }
-  } catch(e) {
-    console.warn('Could not read logo from localStorage', e);
-  }
-}
-
-/* -------------------------
-   Drag & drop (SortableJS)
-   ------------------------- */
-function initSortableSections(){
-  const container = document.getElementById('conteudo');
-  if (!container || typeof Sortable === 'undefined') return;
-
-  // store on window for potential external access
-  window.sortableSections = new Sortable(container, {
-    handle: '.drag-handle',
-    animation: 150,
-    draggable: '.section',
-    onEnd: function () {
-      // rebuild TOC after reorder
-      buildTOC();
-    }
-  });
-}
+function bindLogoControls(){ }
+function handleLogoUpload(ev){ const files = ev.target.files; if (!files || files.length === 0) return; const file = files[0]; const reader = new FileReader(); reader.onload = function(e){ const dataUrl = e.target.result; setLogo(dataUrl); try { localStorage.setItem('pantanal_logo', dataUrl); } catch(e) { console.warn('Could not save logo to localStorage', e); } }; reader.readAsDataURL(file); ev.target.value = ''; }
+function setLogo(dataUrl){ const logo = document.getElementById('siteLogo'); if (!logo) return; logo.src = dataUrl; logo.style.display = ''; logo.setAttribute('data-custom', 'true'); }
+function removeLogo(){ const logo = document.getElementById('siteLogo'); if (!logo) return; logo.style.display = 'none'; logo.removeAttribute('data-custom'); try { localStorage.setItem('pantanal_logo', 'NONE'); } catch(e) { console.warn('Could not save logo state', e); } }
+function restoreDefaultLogo(){ const logo = document.getElementById('siteLogo'); if (!logo) return; const defaultSrc = 'https://via.placeholder.com/220x80?text=Logo'; logo.src = defaultSrc; logo.style.display = ''; logo.removeAttribute('data-custom'); try { localStorage.setItem('pantanal_logo', defaultSrc); } catch(e) { console.warn('Could not save logo state', e); } }
+function loadLogoFromStorage(){ const logo = document.getElementById('siteLogo'); if (!logo) return; try { const stored = localStorage.getItem('pantanal_logo'); if (!stored) return; if (stored === 'NONE') { logo.style.display = 'none'; } else { logo.src = stored; logo.style.display = ''; } } catch(e) { console.warn('Could not read logo from localStorage', e); } }
 
 /* -------------------------
    PDF generation
    ------------------------- */
-function generatePDF(){
-  buildTOC();
-  closeMenu();
 
-  const element = document.getElementById('pdf-content');
-
-  const noPrintNodes = Array.from(document.querySelectorAll('.no-print'));
-  const previousDisplays = noPrintNodes.map(n => n.style.display);
-  noPrintNodes.forEach(n => n.style.display = 'none');
-
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename: 'relatorio-associacao-pantanal.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: {
-      scale: 2.5,
-      useCORS: true,
-      logging: false
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-
-  html2pdf().set(opt).from(element).save().then(() => {
-    noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || '');
-  }).catch((err) => {
-    noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || '');
-    console.error('Erro ao gerar PDF', err);
-    alert('Ocorreu um erro ao gerar o PDF. Veja o console para detalhes.');
-  });
-
-  setTimeout(() => {
-    noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || '');
-  }, 10000);
-}
+function generatePDF(){ buildTOC(); closeMenu(); const element = document.getElementById('pdf-content'); const noPrintNodes = Array.from(document.querySelectorAll('.no-print')); const previousDisplays = noPrintNodes.map(n => n.style.display); noPrintNodes.forEach(n => n.style.display = 'none'); const opt = { margin: [10, 10, 10, 10], filename: 'relatorio-associacao-pantanal.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2.5, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; html2pdf().set(opt).from(element).save().then(() => { noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || ''); }).catch((err) => { noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || ''); console.error('Erro ao gerar PDF', err); alert('Ocorreu um erro ao gerar o PDF. Veja o console para detalhes.'); }); setTimeout(() => { noPrintNodes.forEach((n, i) => n.style.display = previousDisplays[i] || ''); }, 10000); }
