@@ -16,55 +16,36 @@
   <!-- Toolbar fixa -->
   <div class="toolbar no-print" role="navigation" aria-label="Barra de ferramentas">
     <div class="toolbar-inner">
-      <div class="left">
-        <button id="generatePdf">Gerar PDF</button>
-        <button id="previewPrint">Visualizar impressão</button>
-      </div>
-
-      <div class="brand" aria-hidden="true">
-        <!-- espaço central opcional (pode conter título curto) -->
-      </div>
-
-      <div class="right">
-        <button id="addSection">Adicionar seção</button>
-        <button id="addHeading">Adicionar título (h2)</button>
-        <button id="addParagraph">Adicionar parágrafo</button>
-        <button id="addImage">Inserir imagem</button>
-
-        <!-- Logo controls -->
-        <button id="changeLogo">Alterar logo</button>
-        <button id="removeLogo">Remover logo</button>
-        <button id="restoreLogo">Restaurar logo</button>
-
-        <button id="deleteSection">Remover seção ativa</button>
-      </div>
-
-      <!-- botão hamburguer (visível apenas em telas pequenas) -->
+      <!-- Hamburger sempre à esquerda -->
       <button id="mobileToggle" class="mobile-toggle" aria-expanded="false" aria-controls="mobileMenu" aria-label="Abrir menu">
         <span class="hamburger">
           <span></span><span></span><span></span>
         </span>
       </button>
+
+      <div class="brand" aria-hidden="true"></div>
+
+      <!-- Apenas o botão Gerar PDF à direita -->
+      <div class="right-action">
+        <button id="generatePdf">Gerar PDF</button>
+      </div>
     </div>
 
-    <!-- menu dropdown para mobile (mesmos controles) -->
+    <!-- menu (usado em todas as resoluções) -->
     <div id="mobileMenu" class="mobile-menu" role="menu" aria-hidden="true">
       <div class="mobile-section">
-        <button id="mobile-generatePdf">Gerar PDF</button>
-        <button id="mobile-previewPrint">Visualizar impressão</button>
+        <button id="previewPrint">Visualizar impressão</button>
+        <button id="addSection">Adicionar seção</button>
+        <button id="addHeading">Adicionar título (h2)</button>
+        <button id="addParagraph">Adicionar parágrafo</button>
+        <button id="addImage">Inserir imagem</button>
+        <button id="deleteSection">Remover seção ativa</button>
       </div>
       <div class="mobile-section">
-        <button id="mobile-addSection">Adicionar seção</button>
-        <button id="mobile-addHeading">Adicionar título (h2)</button>
-        <button id="mobile-addParagraph">Adicionar parágrafo</button>
-        <button id="mobile-addImage">Inserir imagem</button>
-
-        <!-- mobile logo controls -->
-        <button id="mobile-changeLogo">Alterar logo</button>
-        <button id="mobile-removeLogo">Remover logo</button>
-        <button id="mobile-restoreLogo">Restaurar logo</button>
-
-        <button id="mobile-deleteSection">Remover seção ativa</button>
+        <!-- Logo controls -->
+        <button id="changeLogo">Alterar logo</button>
+        <button id="removeLogo">Remover logo</button>
+        <button id="restoreLogo">Restaurar logo</button>
       </div>
     </div>
   </div>
