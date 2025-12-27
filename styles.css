@@ -8,20 +8,22 @@
   --a4-width-mm: 210mm;
   --a4-height-mm: 297mm;
   --margin-mm: 15mm;
+
+  /* altura da toolbar (ajuste se mudar o padding/altura dos botões) */
   --toolbar-height: 64px;
   --mobile-breakpoint: 700px;
 }
 
 /* Reset e tipografia */
 *{box-sizing:border-box}
-html,body{ height:100%; }
 body{
   margin:0;
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   color: var(--text-color);
   background:#f2f2f2;
-  padding-top: calc(var(--toolbar-height) + 8px); /* compensa toolbar fixa */
-  -webkit-font-smoothing:antialiased;
+
+  /* Compensa a toolbar fixa para que o conteúdo não fique escondido embaixo dela */
+  padding-top: calc(var(--toolbar-height) + 8px);
 }
 
 /* Toolbar fixada no topo */
@@ -41,6 +43,8 @@ body{
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
   backdrop-filter: blur(4px);
 }
+
+/* inner layout */
 .toolbar-inner{
   display:flex;
   align-items:center;
@@ -50,10 +54,10 @@ body{
 }
 .brand{ flex: 1; text-align:center; }
 
-/* Hamburger sempre visível */
-.mobile-toggle{ background: transparent; border: none; padding:8px; margin-left:4px; display:inline-flex; align-items:center; cursor:pointer; }
+/* show hamburger always */
+.mobile-toggle{ background: transparent; border: none; padding:8px; margin-left:4px; display:inline-flex; align-items:center; }
 .hamburger{ display:inline-block; width:22px; height:18px; position:relative; }
-.hamburger span{ position:absolute; left:0; right:0; height:2px; background:var(--primary); display:block; }
+.hamburger span{ position:absolute; left:0; right:0; height:2px; background:#0b6b4f; display:block; }
 .hamburger span:nth-child(1){ top:0; }
 .hamburger span:nth-child(2){ top:8px; }
 .hamburger span:nth-child(3){ bottom:0; }
@@ -62,7 +66,7 @@ body{
 .right-action{ display:flex; align-items:center; }
 .right-action button{ padding:8px 12px; cursor:pointer; background:var(--primary); color:#fff; border: none; border-radius:6px; font-weight:600; }
 
-/* Menu dropdown (usado em todas as larguras) */
+/* mobile menu dropdown — used in all sizes */
 .mobile-menu{
   display:none;
   position: absolute;
@@ -77,12 +81,11 @@ body{
   padding: 12px;
   transform-origin: top left;
 }
-.mobile-menu.open{ display:block; }
 .mobile-menu .mobile-section{ display:flex; flex-direction:column; gap:8px; margin-bottom:8px; }
 .mobile-menu button.menu-btn{ background: var(--primary); color:#fff; border-radius:8px; padding:10px; text-align:left; display:flex; gap:8px; align-items:center; }
 .mobile-menu .icon{ opacity:0.95; }
 
-/* Página A4 */
+/* Cada "página" */
 .page{
   width: 210mm;
   min-height: 297mm;
@@ -100,80 +103,53 @@ body{
 /* Capa */
 .cover{ display:flex; align-items:stretch; justify-content:center; padding:0; }
 .cover-inner{ width:100%; height:100%; display:flex; flex-direction:column; position:relative; overflow:hidden; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02)); }
-
-/* Cover image wrapper + image */
-.cover-image-wrapper{
-  position:absolute;
-  inset:0;
-  z-index:1;
-  display:block;
-  overflow:hidden;
-}
-.cover-image{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-/* Cover shape overlay */
-.cover-shape{ position:absolute; right:0; top:0; width:52%; height:48%; z-index:2; fill: var(--primary); opacity:0.95; transform-origin: top right; }
-.cover-inner::before{ content:""; position:absolute; inset:0; background: linear-gradient(180deg, var(--bg-cover-tint), rgba(0,0,0,0.18)); z-index:1; }
+.cover-image{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter: saturate(0.9) contrast(0.9); z-index:0; }
+.cover-shape{ position:absolute; right:0; top:0; width:52%; height:48%; z-index:1; fill: var(--primary); opacity:0.95; transform-origin: top right; }
+.cover-inner::before{ content:""; position:absolute; inset:0; background: linear-gradient(180deg, var(--bg-cover-tint), rgba(0,0,0,0.18)); z-index:0.5; }
 
 /* logo wrapper + overlay actions */
 .logo-wrapper{
   position:absolute;
   top:18px;
   left:18px;
-  z-index:6;
+  z-index:3;
   display:inline-block;
   pointer-events:auto;
 }
 .logo{ width: var(--logo-width); height:auto; display:block; object-fit:contain; border-radius:4px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
 
-/* actions sobre a logo (ícones) */
+/* ações sobre a logo (ícones) */
 .logo-actions{
   position:absolute;
   top:-8px;
   right:-8px;
   display:flex;
   gap:6px;
-  z-index:7;
 }
 .logo-action{
-  width:32px; height:32px; border-radius:8px; border:none;
-  background: rgba(255,255,255,0.95); display:flex; align-items:center;
-  justify-content:center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); cursor:pointer; padding:4px;
+  width:32px;
+  height:32px;
+  border-radius:8px;
+  border:none;
+  background: rgba(255,255,255,0.95);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  cursor:pointer;
+  padding:4px;
 }
 .logo-action svg{ color: var(--primary); }
 
-/* cover overlay actions */
-.cover-actions{
-  position:absolute;
-  top:12px;
-  right:12px;
-  display:flex;
-  gap:8px;
-  z-index:5;
-}
-.cover-action{
-  width:36px; height:36px; border-radius:8px; border:none; background: rgba(255,255,255,0.95);
-  display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); cursor:pointer; padding:4px;
-}
-.cover-action svg{ color: var(--primary); }
+/* logo hidden state */
+.logo[style*="display: none"] + .logo-actions { display: none !important; }
 
-/* hide overlays when their image is hidden (inline-style based) */
-.logo[style*="display: none"] + .logo-actions,
-.cover-image[style*="display: none"] + .cover-actions {
-  display: none !important;
-}
-
-/* cover content (titles etc.) */
-.cover-content{ z-index:3; margin:auto; text-align:center; padding: 24mm 20mm; width: 70%; color: #fff; }
+/* conteúdo da capa */
+.cover-content{ z-index:2; margin:auto; text-align:center; padding: 24mm 20mm; width: 70%; color: #fff; }
 .title{ font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif; font-size:44px; margin:0 0 8px; font-weight:800; letter-spacing:0.6px; text-transform:uppercase; text-shadow: 0 4px 18px rgba(0,0,0,0.35); }
 .subtitle{ font-family: "Inter", sans-serif; font-size:18px; margin:0 0 16px; font-weight:600; color: rgba(255,255,255,0.92); }
 .meta{ font-size:14px; color: rgba(255,255,255,0.88); }
-.cover-footer{ position:absolute; left:24px; bottom:18px; z-index:3; color: rgba(255,255,255,0.85); font-size:12px; }
+.cover-footer{ position:absolute; left:24px; bottom:18px; z-index:2; color: rgba(255,255,255,0.85); font-size:12px; }
 
 /* Sumário */
 .toc h1{margin-top:0; color:var(--primary)}
@@ -185,29 +161,27 @@ body{
 .section p{ margin:0 0 8px; line-height:1.45; color: #333; }
 .section.active{ outline: 3px solid rgba(11,107,79,0.12); box-shadow: 0 6px 20px rgba(6,44,33,0.06); background: rgba(11,107,79,0.01); }
 .section-controls{ position:absolute; right:6px; top:6px; background: rgba(255,255,255,0.92); padding:6px 8px; border-radius:6px; font-size:12px; display:flex; gap:8px; align-items:center; box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
-
 /* drag handle */
 .drag-handle{ cursor: grab; padding: 2px 6px; background: rgba(11,107,79,0.06); border-radius:4px; font-weight:600; }
-/* hint */
+/* estilo do hint */
 .hint{ font-size:12px; color:#666; padding-left:6px; }
 
-/* images inside content */
+/* imagens dentro do conteúdo */
 .section img, .content img{ max-width:100%; height:auto; display:block; margin:8px 0; page-break-inside: avoid; }
 
-/* esconder elementos na impressão */
+/* esconder elementos apenas ao imprimir */
 @media print{
   .no-print{ display:none !important; position: static !important; }
   body{ background:none; padding-top: 0; }
   .page{ box-shadow:none; margin:0; }
 }
 
-/* responsividade */
+/* Responsividade */
 @media screen and (max-width:900px){
   .page{ width:100%; margin:8px; }
   .cover-content{ width:88%; padding:18mm 12mm; }
   .logo{ left:12px; top:12px; width:140px; }
   :root { --toolbar-height: 56px; }
   body{ padding-top: calc(var(--toolbar-height) + 8px); }
-  .cover-actions{ top:8px; right:8px; }
   .logo-actions{ top:-6px; right:-6px; }
 }
