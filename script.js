@@ -1,4 +1,4 @@
-// script.js — compressão do logo (resize + quality), drag & drop das seções (SortableJS) e ícones de ação na logo
+// script.js — compressão do logo (resize + quality) e drag & drop das seções (SortableJS)
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
 
@@ -26,16 +26,15 @@ function setupToolbar(){
   document.getElementById('addImage').addEventListener('click', () => { document.getElementById('imageInput').click(); closeMenu(); });
   document.getElementById('deleteSection').addEventListener('click', () => { deleteActiveSection(); closeMenu(); });
 
-  // Logo controls in menu (restore only) — edit/remove are overlayed in the logo area
+  // Logo controls
+  document.getElementById('changeLogo').addEventListener('click', () => { document.getElementById('logoInput').click(); closeMenu(); });
+  document.getElementById('removeLogo').addEventListener('click', () => { removeLogo(); closeMenu(); });
   document.getElementById('restoreLogo').addEventListener('click', () => { restoreDefaultLogo(); closeMenu(); });
 
   document.getElementById('imageInput').addEventListener('change', handleImageUpload);
   document.getElementById('logoInput').addEventListener('change', handleLogoUpload);
 }
 
-/* -------------------------
-   Menu behavior
-   ------------------------- */
 function setupMenuBehavior(){
   const toggle = document.getElementById('mobileToggle');
   const menu = document.getElementById('mobileMenu');
@@ -117,6 +116,11 @@ function addSection(){
   setActiveSection(article);
   h2.focus();
   buildTOC();
+
+  // reinit sortable to include new node (Sortable handles dynamically, but ensure update)
+  if (window.sortableSections && typeof window.sortableSections.option === 'function') {
+    window.sortableSections.option('disabled', false);
+  }
 }
 
 function addHeadingToActive(){
@@ -216,23 +220,7 @@ function buildTOC(){
    ------------------------- */
 
 function bindLogoControls(){
-  // wire the overlay buttons on the logo
-  const editBtn = document.getElementById('logoEditBtn');
-  const removeBtn = document.getElementById('logoRemoveBtn');
-  const logoInput = document.getElementById('logoInput');
-
-  if (editBtn && logoInput) {
-    editBtn.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      logoInput.click();
-    });
-  }
-  if (removeBtn) {
-    removeBtn.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      removeLogo();
-    });
-  }
+  // nothing extra needed here, handlers bound in setupToolbar
 }
 
 // Resize + compress logo before saving
@@ -241,40 +229,53 @@ function handleLogoUpload(ev){
   if (!files || files.length === 0) return;
   const file = files[0];
 
-  // Read file as data URL and resize using Image + canvas
+  // Read file as data URL (for fallback) and as Image for resizing
   const urlReader = new FileReader();
   urlReader.onload = () => {
     const originalDataUrl = urlReader.result;
+    // Try to resize using an offscreen Image + canvas
     const img = new Image();
+    // Ensure CORS-safe for local files/data URLs
     img.onload = () => {
-      const MAX_WIDTH = 600;
+      const MAX_WIDTH = 600; // ajuste conforme desejado
       const MAX_HEIGHT = 200;
+      let targetWidth = img.width;
+      let targetHeight = img.height;
+
+      // Calculate new size preserving aspect ratio
       const ratio = Math.min(1, MAX_WIDTH / img.width, MAX_HEIGHT / img.height);
-      const targetWidth = Math.round(img.width * ratio);
-      const targetHeight = Math.round(img.height * ratio);
+      targetWidth = Math.round(img.width * ratio);
+      targetHeight = Math.round(img.height * ratio);
 
       const canvas = document.createElement('canvas');
       canvas.width = targetWidth;
       canvas.height = targetHeight;
       const ctx = canvas.getContext('2d');
 
+      // For PNGs keep transparency; for others use white background optionally
       const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
       if (outputType === 'image/jpeg') {
+        // white background for jpeg
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
+      // Quality for jpeg
       const quality = 0.85;
       const resizedDataUrl = canvas.toDataURL(outputType, outputType === 'image/jpeg' ? quality : undefined);
 
+      // Save and set logo
       setLogo(resizedDataUrl);
       try { localStorage.setItem('pantanal_logo', resizedDataUrl); } catch(e) { console.warn('Could not save logo to localStorage', e); }
     };
+
     img.onerror = () => {
+      // fallback: use original dataURL
       setLogo(originalDataUrl);
       try { localStorage.setItem('pantanal_logo', originalDataUrl); } catch(e) { console.warn('Could not save logo to localStorage', e); }
     };
+
     img.src = originalDataUrl;
   };
   urlReader.readAsDataURL(file);
@@ -312,7 +313,7 @@ function loadLogoFromStorage(){
   if (!logo) return;
   try {
     const stored = localStorage.getItem('pantanal_logo');
-    if (!stored) return;
+    if (!stored) return; // use existing src
     if (stored === 'NONE') {
       logo.style.display = 'none';
     } else {
@@ -331,11 +332,13 @@ function initSortableSections(){
   const container = document.getElementById('conteudo');
   if (!container || typeof Sortable === 'undefined') return;
 
+  // store on window for potential external access
   window.sortableSections = new Sortable(container, {
     handle: '.drag-handle',
     animation: 150,
     draggable: '.section',
     onEnd: function () {
+      // rebuild TOC after reorder
       buildTOC();
     }
   });
