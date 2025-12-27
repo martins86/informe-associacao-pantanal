@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "project": {
+    "informe-associacao-pantanal": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
