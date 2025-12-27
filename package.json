@@ -9,10 +9,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --configuration production",
     "build:ci": "npm run build -- --base-href=/.",
-    "deploy:gh": "ng deploy",
     "watch": "ng build --watch --configuration development",
+    "deploy:gh": "ng deploy",
     "test": "ng test --coverage=true",
     "test:watch": "ng test --watch",
     "test:dev": "npm run test:watch -- --verbose --clearCache",
