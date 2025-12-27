@@ -2,7 +2,6 @@
   --primary: #0b6b4f;
   --accent: #f2a53a;
   --muted: #6b6b6b;
-  --bg-cover-tint: rgba(6,44,33,0.55);
   --text-color: #222;
   --logo-width: 180px;
   --a4-width-mm: 210mm;
@@ -116,7 +115,7 @@ body{
   display:block;
 }
 
-.cover-inner::before{ content:""; position:absolute; inset:0; background: linear-gradient(180deg, var(--bg-cover-tint), rgba(0,0,0,0.18)); z-index:1; }
+.cover-inner::before{ content:""; position:absolute; inset:0; z-index:1; }
 
 /* logo wrapper + overlay actions */
 .logo-wrapper{
