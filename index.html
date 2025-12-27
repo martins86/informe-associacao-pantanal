@@ -11,8 +11,6 @@
   <link rel="stylesheet" href="styles.css" />
   <!-- html2pdf (jsPDF + html2canvas) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <!-- SortableJS para drag & drop das seções -->
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
   <!-- Toolbar fixa -->
@@ -36,38 +34,18 @@
     <!-- menu (usado em todas as resoluções) -->
     <div id="mobileMenu" class="mobile-menu" role="menu" aria-hidden="true">
       <div class="mobile-section">
-        <button id="previewPrint" class="menu-btn">
-          <!-- eye icon -->
-          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
-          Visualizar impressão
-        </button>
-        <button id="addSection" class="menu-btn">
-          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg>
-          Adicionar seção
-        </button>
-        <button id="addHeading" class="menu-btn">
-          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M3 6H21V8H3V6ZM3 11H21V13H3V11ZM3 16H21V18H3V16Z"/></svg>
-          Adicionar título (h2)
-        </button>
-        <button id="addParagraph" class="menu-btn">
-          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M4 6H20V8H4V6ZM4 10H20V12H4V10ZM4 14H14V16H4V14Z"/></svg>
-          Adicionar parágrafo
-        </button>
-        <button id="addImage" class="menu-btn">
-          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M21 19V5A2 2 0 0 0 19 3H5A2 2 0 0 0 3 5V19A2 2 0 0 0 5 21H19A2 2 0 0 0 21 19M8.5 13.5L11 17L14.5 12L19 18H5L8.5 13.5Z"/></svg>
-          Inserir imagem
-        </button>
-        <button id="deleteSection" class="menu-btn">
-          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19ZM19,4H15.5L14.79,3H9.21L8.5,4H5V6H19V4Z"/></svg>
-          Remover seção ativa
-        </button>
+        <button id="previewPrint">Visualizar impressão</button>
+        <button id="addSection">Adicionar seção</button>
+        <button id="addHeading">Adicionar título (h2)</button>
+        <button id="addParagraph">Adicionar parágrafo</button>
+        <button id="addImage">Inserir imagem</button>
+        <button id="deleteSection">Remover seção ativa</button>
       </div>
       <div class="mobile-section">
-        <!-- Logo controls: keep Restore here, edit/remove also available on logo itself -->
-        <button id="restoreLogo" class="menu-btn">
-          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.86 0 7 3.14 7 7a7 7 0 0 1-7 7c-3.31 0-6.08-2.28-6.83-5.29L4 17.5C4.86 20.99 8.14 24 12 24a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9z"/></svg>
-          Restaurar logo
-        </button>
+        <!-- Logo controls -->
+        <button id="changeLogo">Alterar logo</button>
+        <button id="removeLogo">Remover logo</button>
+        <button id="restoreLogo">Restaurar logo</button>
       </div>
     </div>
   </div>
@@ -81,20 +59,8 @@
     <!-- Capa (página 1) -->
     <section class="page cover" id="capa">
       <div class="cover-inner">
-        <!-- Logo wrapper: imagem + overlay actions (edit/remove) -->
-        <div class="logo-wrapper" id="logoWrapper">
-          <img class="logo" id="siteLogo" src="https://via.placeholder.com/220x80?text=Logo" alt="Logo Associação Pantanal" />
-          <div class="logo-actions no-print" id="logoActions" aria-hidden="false">
-            <button id="logoEditBtn" class="logo-action" title="Alterar logo" aria-label="Alterar logo">
-              <!-- pencil -->
-              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
-            </button>
-            <button id="logoRemoveBtn" class="logo-action" title="Remover logo" aria-label="Remover logo">
-              <!-- x -->
-              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
-          </div>
-        </div>
+        <!-- Logo: elemento manipulado via JS; pode ser ocultado -->
+        <img class="logo" id="siteLogo" src="https://via.placeholder.com/220x80?text=Logo" alt="Logo Associação Pantanal" />
 
         <img class="cover-image" src="https://picsum.photos/1200/1600?grayscale&blur=1" alt="Capa ilustrativa (substitua)" />
 
@@ -126,7 +92,6 @@
       <!-- cada article é uma seção editável -->
       <article class="section" tabindex="0">
         <div class="section-controls no-print">
-          <span class="drag-handle" title="Arraste para reordenar">≡</span>
           <span class="hint">Seção ativa</span>
         </div>
         <h2 id="introducao" contenteditable="true">1. Introdução</h2>
@@ -135,7 +100,6 @@
 
       <article class="section" tabindex="0">
         <div class="section-controls no-print">
-          <span class="drag-handle" title="Arraste para reordenar">≡</span>
           <span class="hint">Seção ativa</span>
         </div>
         <h2 id="atividades" contenteditable="true">2. Atividades Recentes</h2>
@@ -144,7 +108,6 @@
 
       <article class="section" tabindex="0">
         <div class="section-controls no-print">
-          <span class="drag-handle" title="Arraste para reordenar">≡</span>
           <span class="hint">Seção ativa</span>
         </div>
         <h2 id="financeiro" contenteditable="true">3. Financeiro</h2>
