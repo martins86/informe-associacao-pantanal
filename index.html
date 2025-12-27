@@ -37,6 +37,7 @@
     <div id="mobileMenu" class="mobile-menu" role="menu" aria-hidden="true">
       <div class="mobile-section">
         <button id="previewPrint" class="menu-btn">
+          <!-- eye icon -->
           <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
           Visualizar impressão
         </button>
@@ -62,13 +63,10 @@
         </button>
       </div>
       <div class="mobile-section">
+        <!-- Logo controls: keep Restore here, edit/remove also available on logo itself -->
         <button id="restoreLogo" class="menu-btn">
           <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.86 0 7 3.14 7 7a7 7 0 0 1-7 7c-3.31 0-6.08-2.28-6.83-5.29L4 17.5C4.86 20.99 8.14 24 12 24a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9z"/></svg>
           Restaurar logo
-        </button>
-        <button id="restoreCover" class="menu-btn">
-          <svg class="icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 5V1L7 6l5 5V7c3.86 0 7 3.14 7 7a7 7 0 0 1-7 7c-3.31 0-6.08-2.28-6.83-5.29L4 17.5C4.86 20.99 8.14 24 12 24a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9z"/></svg>
-          Restaurar capa
         </button>
       </div>
     </div>
@@ -77,38 +75,28 @@
   <!-- hidden file inputs -->
   <input id="imageInput" type="file" accept="image/*" style="display:none" />
   <input id="logoInput" type="file" accept="image/*" style="display:none" />
-  <input id="coverInput" type="file" accept="image/*" style="display:none" />
 
   <!-- Conteúdo que será convertido em PDF -->
   <div id="pdf-content">
     <!-- Capa (página 1) -->
     <section class="page cover" id="capa">
       <div class="cover-inner">
-        <!-- Logo wrapper -->
+        <!-- Logo wrapper: imagem + overlay actions (edit/remove) -->
         <div class="logo-wrapper" id="logoWrapper">
           <img class="logo" id="siteLogo" src="https://via.placeholder.com/220x80?text=Logo" alt="Logo Associação Pantanal" />
           <div class="logo-actions no-print" id="logoActions" aria-hidden="false">
             <button id="logoEditBtn" class="logo-action" title="Alterar logo" aria-label="Alterar logo">
+              <!-- pencil -->
               <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
             </button>
             <button id="logoRemoveBtn" class="logo-action" title="Remover logo" aria-label="Remover logo">
+              <!-- x -->
               <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
             </button>
           </div>
         </div>
 
-        <!-- Cover image wrapper with overlay actions -->
-        <div class="cover-image-wrapper" id="coverWrapper">
-          <img class="cover-image" id="siteCover" src="https://picsum.photos/1200/1600?grayscale&blur=1" alt="Capa ilustrativa (substitua)" />
-          <div class="cover-actions no-print" id="coverActions">
-            <button id="coverEditBtn" class="cover-action" title="Alterar capa" aria-label="Alterar capa">
-              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
-            </button>
-            <button id="coverRemoveBtn" class="cover-action" title="Remover capa" aria-label="Remover capa">
-              <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
-          </div>
-        </div>
+        <img class="cover-image" src="https://picsum.photos/1200/1600?grayscale&blur=1" alt="Capa ilustrativa (substitua)" />
 
         <svg class="cover-shape" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <polygon points="0,0 100,0 100,70" />
