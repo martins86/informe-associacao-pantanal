@@ -30,6 +30,12 @@
         <button id="addHeading">Adicionar título (h2)</button>
         <button id="addParagraph">Adicionar parágrafo</button>
         <button id="addImage">Inserir imagem</button>
+
+        <!-- Logo controls -->
+        <button id="changeLogo">Alterar logo</button>
+        <button id="removeLogo">Remover logo</button>
+        <button id="restoreLogo">Restaurar logo</button>
+
         <button id="deleteSection">Remover seção ativa</button>
       </div>
 
@@ -52,20 +58,28 @@
         <button id="mobile-addHeading">Adicionar título (h2)</button>
         <button id="mobile-addParagraph">Adicionar parágrafo</button>
         <button id="mobile-addImage">Inserir imagem</button>
+
+        <!-- mobile logo controls -->
+        <button id="mobile-changeLogo">Alterar logo</button>
+        <button id="mobile-removeLogo">Remover logo</button>
+        <button id="mobile-restoreLogo">Restaurar logo</button>
+
         <button id="mobile-deleteSection">Remover seção ativa</button>
       </div>
     </div>
   </div>
 
-  <!-- hidden file input para images -->
+  <!-- hidden file inputs -->
   <input id="imageInput" type="file" accept="image/*" style="display:none" />
+  <input id="logoInput" type="file" accept="image/*" style="display:none" />
 
   <!-- Conteúdo que será convertido em PDF -->
   <div id="pdf-content">
     <!-- Capa (página 1) -->
     <section class="page cover" id="capa">
       <div class="cover-inner">
-        <img class="logo" src="https://via.placeholder.com/220x80?text=Logo" alt="Logo Associação Pantanal" />
+        <!-- Logo: elemento manipulado via JS; pode ser ocultado -->
+        <img class="logo" id="siteLogo" src="https://via.placeholder.com/220x80?text=Logo" alt="Logo Associação Pantanal" />
 
         <img class="cover-image" src="https://picsum.photos/1200/1600?grayscale&blur=1" alt="Capa ilustrativa (substitua)" />
 
