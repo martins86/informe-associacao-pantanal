@@ -1,8 +1,60 @@
-<header>
-  <h1>Associação Pantanal 2</h1>
-  <h2>Relatório</h2>
+<header class="toolbar no-print" role="navigation" aria-label="Barra de ferramentas">
+
+  <mat-toolbar>
+    <button matIconButton [matMenuTriggerFor]="menu" aria-label="Menu de ferramentas">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item disabled aria-label="imprimir o relatório">
+        <mat-icon>print</mat-icon>
+        <span>imprimir o relatório</span>
+      </button>
+    </mat-menu>
+
+    <span class="spacer"></span>
+
+    <button matIconButton matTooltip="imprimir o relatório" aria-label="imprimir o relatório" onclick="window.print()">
+      <mat-icon>print</mat-icon>
+    </button>
+  </mat-toolbar>
+
 </header>
+
 <router-outlet />
-<footer>
-  <p>Relatório gerado por Associação Pantanal 2 &copy; 2024</p>
+
+<main id="pdf-content">
+
+  <!-- Capa (página 1) -->
+  <section class="page" id="capa">
+    <div class="cover-inner">
+
+      <div class="cover-content">
+        <h1 class="title" contenteditable="true">Associação Pantanal</h1>
+        <h2 class="subtitle" contenteditable="true">Relatório anual e atualizações</h2>
+        <p class="meta" contenteditable="true">Data: <span id="reportDate">00/00/0000</span></p>
+      </div>
+
+      <div class="cover-footer" contenteditable="true">
+        Estrada Servidão Januário Guilherme - 1130 - Chácaras Luzitanas Campinas - Estância Pantanal 2 - CEP 13.188 -
+        222 - Campinas/SP
+      </div>
+      
+    </div>
+  </section>
+
+  <!-- Conteúdo principal (páginas 2 em diante) -->
+
+
+  <!-- Contracapa final (página última) -->
+  <section class="page backcover" id="contracapa">
+    <div class="back-inner" contenteditable="true">
+      <h3>Obrigado</h3>
+      <p>Associação Pantanal — Todos os direitos reservados</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="no-print">
+  <p>Relatório gerado por Associação Pantanal 2 &copy; 2025</p>
 </footer>
